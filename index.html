@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traducteur de Langues</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    background:#f2f2f2;
+    margin:20px;
+}
+
+h1{
+    text-align:center;
+}
+
+.top{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+}
+
+button{
+    padding:10px 15px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    background:#2196F3;
+    color:white;
+    font-size:16px;
+}
+
+button:hover{
+    background:#1976D2;
+}
+
+select,input,textarea{
+    width:100%;
+    padding:10px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    box-sizing:border-box;
+}
+
+.container{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+.zone{
+    background:white;
+    padding:15px;
+    border-radius:10px;
+    box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+textarea{
+    height:250px;
+    resize:vertical;
+}
+
+@media(max-width:700px){
+    .container{
+        grid-template-columns:1fr;
+    }
+}
+</style>
+</head>
+<body>
+
+<h1>🌍 Traducteur de Nouvelle Langue</h1>
+
+<div class="top">
+    <button onclick="ajouterMot()">➕ Ajouter un mot</button>
+    <button onclick="creerLangue()">🌐 Créer une langue</button>
+</div>
+
+<select id="langue" onchange="traduire()"></select>
+
+<br><br>
+
+<div class="container">
+
+    <div class="zone">
+        <h2>Français</h2>
+        <textarea
+            id="francais"
+            placeholder="Écris un texte en français..."
+            oninput="traduire()"
+        ></textarea>
+    </div>
+
+    <div class="zone">
+        <h2>Traduction</h2>
+        <textarea
+            id="traduction"
+            readonly
+        ></textarea>
+    </div>
+
+</div>
+
+<script>
+
+let langues = {};
+
+function sauvegarderLangues(){
+    localStorage.setItem(
+        "languesPerso",
+        JSON.stringify(langues)
+    );
+}
+
+function chargerLangues(){
+
+    const sauvegarde =
+        localStorage.getItem("languesPerso");
+
+    if(sauvegarde){
+        langues = JSON.parse(sauvegarde);
+    }else{
+
+        langues = {
+            eldar:{
+                bonjour:"salar",
+                salut:"sala",
+                merci:"thal",
+                oui:"ara",
+                non:"nara",
+                je:"na",
+                tu:"ta",
+                il:"ka",
+                elle:"kia",
+                nous:"nava",
+                vous:"tava",
+                maison:"dor",
+                chat:"mira",
+                chien:"vark"
+            }
+        };
+
+        sauvegarderLangues();
+    }
+
+    actualiserSelect();
+}
+
+function actualiserSelect(){
+
+    const select =
+        document.getElementById("langue");
+
+    select.innerHTML = "";
+
+    for(const nom in langues){
+
+        const option =
+            document.createElement("option");
+
+        option.value = nom;
+        option.textContent = nom;
+
+        select.appendChild(option);
+    }
+}
+
+function creerLangue(){
+
+    let nom = prompt(
+        "Nom de la nouvelle langue :"
+    );
+
+    if(!nom) return;
+
+    nom = nom.trim();
+
+    if(langues[nom]){
+        alert("Cette langue existe déjà.");
+        return;
+    }
+
+    langues[nom] = {};
+
+    sauvegarderLangues();
+    actualiserSelect();
+
+    document.getElementById("langue").value =
+        nom;
+
+    traduire();
+
+    alert("Langue créée !");
+}
+
+function ajouterMot(){
+
+    const langue =
+        document.getElementById(
+            "langue"
+        ).value;
+
+    if(!langue){
+        alert("Sélectionne une langue.");
+        return;
+    }
+
+    const francais =
+        prompt("Mot français :");
+
+    if(!francais) return;
+
+    const traductionMot =
+        prompt("Traduction :");
+
+    if(!traductionMot) return;
+
+    langues[langue][
+        francais.toLowerCase().trim()
+    ] = traductionMot;
+
+    sauvegarderLangues();
+
+    alert("Mot ajouté !");
+    traduire();
+}
+
+function traduire(){
+
+    const langue =
+        document.getElementById(
+            "langue"
+        ).value;
+
+    if(!langue) return;
+
+    const texte =
+        document.getElementById(
+            "francais"
+        ).value.toLowerCase();
+
+    const mots =
+        texte.split(/\s+/);
+
+    const resultat =
+        mots.map(mot => {
+
+            if(
+                langues[langue] &&
+                langues[langue][mot]
+            ){
+                return langues[langue][mot];
+            }
+
+            return "[" + mot + "]";
+        });
+
+    document.getElementById(
+        "traduction"
+    ).value = resultat.join(" ");
+}
+
+chargerLangues();
+traduire();
+
+</script>
+
+</body>
+</html>
